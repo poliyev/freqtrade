@@ -212,34 +212,19 @@ def binance(
     :param open_rate: Entry Price of position (one-way mode)
     :param mm_ratio: Maintenance margin rate of position (one-way mode)
     """
-    wb = wallet_balance
-    tmm_1 = 0.0 if collateral == Collateral.ISOLATED else mm_ex_1
-    upnl_1 = 0.0 if collateral == Collateral.ISOLATED else upnl_ex_1
-    cum_b = maintenance_amt
     side_1 = -1 if is_short else 1
     position = abs(position)
-    ep1 = open_rate
-    mmr_b = mm_ratio
+    cross_vars = upnl_ex_1 - mm_ex_1 if collateral == Collateral.CROSS else 0.0
 
     if trading_mode == TradingMode.MARGIN and collateral == Collateral.CROSS:
         # https://www.binance.com/en/support/faq/f6b010588e55413aa58b7d63ee0125ed
         exception("binance", trading_mode, collateral)
-    elif trading_mode == TradingMode.FUTURES and collateral == Collateral.ISOLATED:
+    if trading_mode == TradingMode.FUTURES:
         # https://www.binance.com/en/support/faq/b3c689c1f50a44cabb3a84e663b81d93
         # Liquidation Price of USDⓈ-M Futures Contracts Isolated
 
-        # Isolated margin mode, then TMM=0，UPNL=0
-        return (wb + cum_b - side_1 * position * ep1) / (
-            position * mmr_b - side_1 * position)
-
-    elif trading_mode == TradingMode.FUTURES and collateral == Collateral.CROSS:
-        # https://www.binance.com/en/support/faq/b3c689c1f50a44cabb3a84e663b81d93
-        # Liquidation Price of USDⓈ-M Futures Contracts Cross
-
-        # Isolated margin mode, then TMM=0，UPNL=0
-        # * Untested
-        return (wb - tmm_1 + upnl_1 + cum_b - side_1 * position * ep1) / (
-            position * mmr_b - side_1 * position)
+        return (wallet_balance + cross_vars + maintenance_amt - (side_1 * position * open_rate)) / (
+            (position * mm_ratio) - (side_1 * position))
 
     # If nothing was returned
     exception("binance", trading_mode, collateral)
