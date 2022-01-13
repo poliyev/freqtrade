@@ -707,10 +707,10 @@ def test_process_informative_pairs_added(default_conf_usdt, ticker_usdt, mocker)
 
 
 @pytest.mark.parametrize("is_short,trading_mode,exchange_name,margin_mode,liq_price", [
-    (False, 'spot', 'binance', None, None),
-    (True, 'spot', 'binance', None, None),
-    (False, 'spot', 'gateio', None, None),
-    (True, 'spot', 'gateio', None, None),
+    (False, 'spot', 'binance', '', None),
+    (True, 'spot', 'binance', '', None),
+    (False, 'spot', 'gateio', '', None),
+    (True, 'spot', 'gateio', '', None),
     (True, 'futures', 'binance', 'isolated', 13.217821782178218),
     (False, 'futures', 'binance', 'isolated', 6.717171717171718),
     (True, 'futures', 'gateio', 'isolated', 13.198706526760379),
@@ -766,8 +766,6 @@ def test_execute_entry(mocker, default_conf_usdt, fee, limit_order,
         get_min_pair_stake_amount=MagicMock(return_value=1),
         get_fee=fee,
         get_funding_fees=MagicMock(return_value=0),
-        name=exchange_name,
-        get_maintenance_ratio_and_amt=[0.5, 0.5]
     )
     pair = 'ETH/USDT'
 
@@ -911,6 +909,11 @@ def test_execute_entry(mocker, default_conf_usdt, fee, limit_order,
     assert trade.open_rate_requested == 10
 
     # In case of custom entry price not float type
+    mocker.patch.multiple(
+        'freqtrade.exchange.Exchange',
+        name=exchange_name,
+        get_maintenance_ratio_and_amt=MagicMock(return_value=[0.01, 0.01])
+    )
     order['status'] = 'open'
     order['id'] = '5568'
     freqtrade.strategy.custom_entry_price = lambda **kwargs: "string price"

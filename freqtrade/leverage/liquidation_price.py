@@ -106,8 +106,8 @@ def liquidation_price(
             trading_mode=trading_mode,
             collateral=collateral,  # type: ignore
             wallet_balance=wallet_balance,
-            # mm_ex_1=mm_ex_1,
-            # upnl_ex_1=upnl_ex_1,
+            mm_ex_1=mm_ex_1,  # type: ignore
+            upnl_ex_1=upnl_ex_1,  # type: ignore
             maintenance_amt=maintenance_amt,  # type: ignore
             position=position,
             mm_ratio=mm_ratio,
